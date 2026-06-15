@@ -1,0 +1,69 @@
+<!DOCTYPE html><html lang="zh"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>🔐 图片混淆加密</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--card:#161b22;--border:#30363d;--text:#c9d1d9;--mu:#8b949e;--ac:#58a6ff;--g:#238636;--gh:#2ea043;--b:#1f6feb;--bh:#388bfd;--re:#da3633;--r:8px}
+body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
+.c{width:100%;max-width:900px;display:flex;flex-direction:column;gap:20px}
+.hd{text-align:center;padding:8px 0}.hd h1{font-size:1.6em;font-weight:700}.hd p{color:var(--mu);font-size:.88em;margin-top:4px}
+.ca{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:24px}
+.ct{font-size:.82em;text-transform:uppercase;letter-spacing:.06em;color:var(--mu);margin-bottom:16px}
+.up{border:2px dashed var(--border);border-radius:var(--r);padding:40px 20px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s}
+.up:hover,.up.dr{border-color:var(--ac);background:rgba(88,166,255,.05)}
+.up .ic{font-size:2.4em;margin-bottom:8px}.up .hi{color:var(--mu);font-size:.9em}.up .su{color:var(--mu);font-size:.78em;margin-top:4px}
+.up input{display:none}
+.st{display:flex;gap:12px;flex-wrap:wrap;align-items:end}.st .fi{flex:1;min-width:140px}
+.st label{display:block;font-size:.82em;color:var(--mu);margin-bottom:4px}
+.st input,.st select{width:100%;padding:10px 12px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:.92em;outline:none;transition:border-color .2s}
+.st input:focus,.st select:focus{border-color:var(--ac)}
+.st select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238b949e' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+.ac{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.bt{padding:10px 20px;border-radius:var(--r);border:none;font-size:.92em;font-weight:600;cursor:pointer;transition:background .15s,transform .1s;color:#fff;white-space:nowrap}.bt:active{transform:scale(.97)}
+.be{background:var(--g);flex:1}.be:hover{background:var(--gh)}.bd{background:var(--b);flex:1}.bd:hover{background:var(--bh)}
+.bo{background:transparent;border:1px solid var(--border);color:var(--text)}.bo:hover{background:rgba(255,255,255,.05)}
+.pv{display:none;margin-top:16px}.pv.sh{display:block}.pg{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:600px){.pg{grid-template-columns:1fr}}
+.pp{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.pp .lb{padding:8px 12px;font-size:.78em;color:var(--mu);background:rgba(255,255,255,.03);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.pp canvas{width:100%;display:block}.pp .in{padding:6px 12px;font-size:.75em;color:var(--mu)}
+.dl{display:none;margin-top:12px;padding:12px 16px;background:rgba(35,134,54,.1);border:1px solid rgba(35,134,54,.3);border-radius:var(--r);align-items:center;gap:12px}
+.dl.sh{display:flex}.dl .ms{flex:1;font-size:.88em}
+.dl .bd{background:var(--g);color:#fff;padding:8px 18px;border-radius:var(--r);text-decoration:none;font-weight:600;font-size:.88em;transition:background .15s}.dl .bd:hover{background:var(--gh)}
+.sb{text-align:center;font-size:.85em;color:var(--mu);min-height:24px;transition:color .2s}.sb.er{color:var(--re)}.sb.ok{color:var(--g)}
+.hl{font-size:.78em;color:var(--mu);line-height:1.6;background:rgba(255,255,255,.02);border-radius:var(--r);padding:14px 16px;margin-top:8px}
+.hl strong{color:var(--text)}.hl .tg{display:inline-block;padding:1px 6px;border-radius:3px;background:var(--border);font-family:monospace;font-size:.9em}
+</style></head><body>
+<div class="c">
+<div class="hd"><h1>🔐 图片混淆加密</h1><p>纯浏览器端 · 不上传服务器 · 输出可打开但内容混乱的图片</p></div>
+<div class="ca"><div class="ct">📁 选择图片</div><div class="up" id="uz"><div class="ic">🖼️</div><div class="hi">点击选择 或 拖拽图片到此处</div><div class="su">支持 JPG / PNG / WebP / BMP / GIF</div><input type="file" id="fi" accept="image/*"></div></div>
+<div class="ca" id="sc" style="display:none"><div class="ct">⚙ 加密设置</div><div class="st"><div class="fi"><label for="ki">🔑 密钥</label><input type="text" id="ki" placeholder="输入密钥…" value=""></div><div class="fi"><label for="ms">🧩 算法</label><select id="ms"><option value="block">分块洗牌 — 双重打乱（推荐）</option><option value="shuffle">像素洗牌 — 逐像素打乱</option><option value="xor">⚠ XOR 异或 — 可能损坏文件，非必须勿用</option></select></div></div><div class="ac"><button class="bt be" id="be">🔒 加密混淆</button><button class="bt bd" id="bd">🔓 解密还原</button><button class="bt bo" id="br">↺ 换图</button></div><div class="sb" id="sb"></div></div>
+<div class="pv" id="pa"><div class="pg"><div class="pp"><div class="lb"><span>📷 原始图片</span><span id="os"></span></div><canvas id="oc"></canvas><div class="in">源图片</div></div><div class="pp"><div class="lb"><span id="rl">🔒 加密结果</span><span id="rs"></span></div><canvas id="rc"></canvas><div class="in" id="ri"></div></div></div></div>
+<div class="dl" id="db"><span class="ms">✅ 处理完成</span><a class="bd" id="dl" href="#" download="scrambled.png">💾 下载结果 (PNG)</a></div>
+<div class="hl"><strong>💡 算法说明</strong><br>· <span class="tg">block</span> <strong>推荐</strong>：自适应分块→打乱块顺序→打乱块内像素，黑背景无零星噪点<br>· <span class="tg">shuffle</span>：Fisher-Yates 像素级洗牌，RGBA 整像素移动，不拆分通道<br>· <span class="tg">xor</span> <strong style="color:#da3633">⚠ 警告</strong>：部分平台重新编码会致文件损坏，非必须勿用<br>· 加解密同密钥 100% 还原 · PNG 无损输出 · 全程浏览器本地运算</div>
+</div>
+<script>
+function R(seed){let s=seed|0;return function(){s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function H(s){let h=5381;for(let i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))|0;return h}
+function S(n,r){let a=new Uint32Array(n);for(let i=0;i<n;i++)a[i]=i;for(let i=n-1;i>0;i--){let j=Math.floor(r()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
+function sSF(d,k){let p=new Uint32Array(d.buffer),n=p.length,pm=S(n,R(H(k+':shuffle'))),r=new Uint32Array(n);for(let i=0;i<n;i++)r[i]=p[pm[i]];return new Uint8Array(r.buffer)}
+function uSF(d,k){let p=new Uint32Array(d.buffer),n=p.length,pm=S(n,R(H(k+':shuffle'))),iv=new Uint32Array(n),r=new Uint32Array(n);for(let i=0;i<n;i++)iv[pm[i]]=i;for(let i=0;i<n;i++)r[i]=p[iv[i]];return new Uint8Array(r.buffer)}
+function sBK(d,k,bp){let p=new Uint32Array(d.buffer),n=p.length,bs=bp||Math.max(64,Math.floor(Math.sqrt(n)/4)),nb=Math.ceil(n/bs),bl=[];for(let i=0;i<nb;i++){let s=i*bs,e=Math.min(s+bs,n);bl.push({idx:i,data:p.slice(s,e)})}let r1=R(H(k+':block')),pm=S(nb,r1),r=new Uint32Array(n),pos=0;for(let bi=0;bi<nb;bi++){let b=bl[pm[bi]],r2=R(H(k+':block_inner:'+b.idx)),ip=S(b.data.length,r2);for(let j=0;j<b.data.length;j++)r[pos+j]=b.data[ip[j]];pos+=b.data.length}return new Uint8Array(r.buffer)}
+function uBK(d,k,bp){let p=new Uint32Array(d.buffer),n=p.length,bs=bp||Math.max(64,Math.floor(Math.sqrt(n)/4)),nb=Math.ceil(n/bs),r1=R(H(k+':block')),pm=S(nb,r1),sbs=[],pos=0;for(let op=0;op<nb;op++){let oi=pm[op],bl=Math.min(bs,n-oi*bs);sbs.push({origIdx:oi,data:p.slice(pos,pos+bl)});pos+=bl}let rst={};for(let sb of sbs){let oi=sb.origIdx,r2=R(H(k+':block_inner:'+oi)),ip=S(sb.data.length,r2),iv=new Uint32Array(sb.data.length),un=new Uint32Array(sb.data.length);for(let j=0;j<sb.data.length;j++)iv[ip[j]]=j;for(let j=0;j<sb.data.length;j++)un[j]=sb.data[iv[j]];rst[oi]=un}let r=new Uint32Array(n);pos=0;for(let oi=0;oi<nb;oi++){r.set(rst[oi],pos);pos+=rst[oi].length}return new Uint8Array(r.buffer)}
+function sXR(d,k){let rn=R(H(k+':xor')),r=new Uint8Array(d.length);for(let i=0;i<d.length;i++)r[i]=d[i]^Math.floor(rn()*256);return r}
+function uXR(d,k){return sXR(d,k)}
+const AL={shuffle:{enc:sSF,dec:uSF},block:{enc:sBK,dec:uBK},xor:{enc:sXR,dec:uXR}};
+function PI(src,key,mode,method){let d=new Uint8Array(src.data.buffer),a=AL[method]||AL.block,fn=mode==='decrypt'?a.dec:a.enc,r=fn(d,key);return new ImageData(new Uint8ClampedArray(r.buffer),src.width,src.height)}
+var D,O=null,Rs=null;
+function G(id){return document.getElementById(id)}
+function I(){D={uz:G('uz'),fi:G('fi'),sc:G('sc'),ki:G('ki'),ms:G('ms'),be:G('be'),bd:G('bd'),br:G('br'),sb:G('sb'),pa:G('pa'),oc:G('oc'),rc:G('rc'),os:G('os'),rs:G('rs'),rl:G('rl'),ri:G('ri'),db:G('db'),dl:G('dl')};B()}
+function SS(m,t){D.sb.textContent=m;D.sb.className='sb'+(t?' '+t:'')}
+function FL(f){if(!f.type.match(/image\//))return SS('请选择图片文件','er');SS('加载中…');let r=new FileReader();r.onload=e=>{let img=new Image();img.onload=()=>{let c=D.oc;c.width=img.width;c.height=img.height;let ctx=c.getContext('2d');ctx.drawImage(img,0,0);O=ctx.getImageData(0,0,img.width,img.height);Rs=null;D.sc.style.display='block';D.pa.classList.add('sh');D.db.classList.remove('sh');D.os.textContent=img.width+'×'+img.height;D.rc.width=img.width;D.rc.height=img.height;D.rl.textContent='🔒 加密结果';D.ri.textContent='点击「加密混淆」开始';D.rs.textContent='';let rctx=D.rc.getContext('2d');rctx.fillStyle='#161b22';rctx.fillRect(0,0,c.width,c.height);rctx.fillStyle='#8b949e';rctx.font='14px sans-serif';rctx.textAlign='center';rctx.fillText('等待处理…',c.width/2,c.height/2);SS('已加载:'+img.width+'×'+img.height,'ok');D.uz.style.display='none'};img.src=e.target.result};r.readAsDataURL(f)}
+function FLU(url){fetch(url).then(r=>r.blob()).then(b=>FL(new File([b],'image.png',{type:'image/*'}))).catch(e=>SS('加载失败:'+e,'er'))}
+function PR(mo){if(!O)return SS('请先选择图片','er');let key=D.ki.value.trim()||'default',method=D.ms.value;SS('处理中…');D.be.disabled=true;D.bd.disabled=true;setTimeout(function(){try{let t0=performance.now();Rs=PI(O,key,mo,method);let el=((performance.now()-t0)/1000).toFixed(2),c=D.rc;c.width=Rs.width;c.height=Rs.height;c.getContext('2d').putImageData(Rs,0,0);D.rl.textContent=mo==='encrypt'?'🔒 加密结果':'🔓 解密结果';D.ri.textContent=method+' · '+el+'s';D.rs.textContent=c.width+'×'+c.height;D.db.classList.add('sh');SS('✅ '+(mo==='encrypt'?'加密':'解密')+'完成 ('+el+'s)','ok')}catch(e){SS('❌ '+e.message,'er');console.error(e)}D.be.disabled=false;D.bd.disabled=false},50)}
+function RE(){O=null;Rs=null;D.sc.style.display='none';D.pa.classList.remove('sh');D.db.classList.remove('sh');D.uz.style.display='';D.fi.value='';D.sb.textContent='';D.sb.className='sb';D.be.disabled=false;D.bd.disabled=false;[D.oc,D.rc].forEach(function(c){c.getContext('2d').clearRect(0,0,c.width,c.height)})}
+function PCB(){if(window.AndroidBridge){AndroidBridge.pickImage();return}D.fi.click()}
+function onAndroidFile(url){FLU(url)}
+function B(){D.uz.addEventListener('click',PCB);D.fi.addEventListener('change',function(e){if(e.target.files[0])FL(e.target.files[0])});D.uz.addEventListener('dragover',function(e){e.preventDefault();D.uz.classList.add('dr')});D.uz.addEventListener('dragleave',function(){D.uz.classList.remove('dr')});D.uz.addEventListener('drop',function(e){e.preventDefault();D.uz.classList.remove('dr');if(e.dataTransfer.files[0])FL(e.dataTransfer.files[0])});document.addEventListener('dragover',function(e){e.preventDefault()});document.addEventListener('drop',function(e){e.preventDefault();if(e.target.closest('.up'))return;if(e.dataTransfer.files[0])FL(e.dataTransfer.files[0])});D.be.addEventListener('click',function(){PR('encrypt')});D.bd.addEventListener('click',function(){PR('decrypt')});D.br.addEventListener('click',RE);D.ki.addEventListener('keydown',function(e){if(e.key==='Enter')PR('encrypt')});D.dl.addEventListener('click',function(e){if(!Rs){e.preventDefault();return}e.preventDefault();setTimeout(function(){D.rc.toBlob(function(b){let u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='scrambled.png';a.click();setTimeout(function(){URL.revokeObjectURL(u)},2000)},'image/png')},10)})}
+I();
+</script></body></html>
