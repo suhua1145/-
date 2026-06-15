@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>阅读 · 墨羽书屋</title>
+<style>
+:root{--bg:#fafafa;--bg-bar:#fff;--text:#1f2937;--text2:#6b7280;--bd:#e5e7eb;--blue:#2563eb}
+@media(prefers-color-scheme:dark){
+:root{--bg:#0a0a12;--bg-bar:#111122;--text:#d0d0dc;--text2:#707080;--bd:#1e1e32;--blue:#3b82f6}
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+    font-family:'Noto Sans SC','PingFang SC',system-ui,sans-serif;
+    background:var(--bg);color:var(--text);line-height:2;overflow-x:hidden
+}
+/* 顶栏 */
+.bar{
+    position:fixed;top:0;left:0;right:0;z-index:100;
+    background:var(--bg-bar);border-bottom:1px solid var(--bd);
+    display:flex;align-items:center;padding:0 24px;height:56px;gap:12px
+}
+.bar .back{
+    background:none;border:none;font-size:1.3rem;cursor:pointer;
+    color:var(--text);padding:4px 8px
+}
+.bar .back:hover{color:var(--blue)}
+.bar .bt{
+    font-size:1rem;font-weight:700;color:var(--text);
+    flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap
+}
+.bar select{
+    background:var(--bg);border:1px solid var(--bd);color:var(--text);
+    padding:6px 10px;font-size:.8rem;max-width:180px
+}
+/* 阅读区 */
+#reader{
+    max-width:780px;margin:0 auto;padding:80px 28px 100px;min-height:100vh
+}
+#reader .ct{font-size:1.5rem;font-weight:800;color:var(--text);text-align:center;margin-bottom:32px;letter-spacing:2px}
+#reader .body{font-size:1rem;color:var(--text);word-wrap:break-word}
+#reader .body p{margin-bottom:1.2em;text-indent:2em}
+#reader .body h1,#reader .body h2,#reader .body h3{font-weight:700;color:var(--text);margin:1.8em 0 .8em;text-indent:0}
+#reader .body h1{font-size:1.4rem;text-align:center}
+#reader .body h2{font-size:1.2rem}
+#reader .body blockquote{
+    border-left:3px solid var(--blue);padding:8px 16px;margin:1em 0;
+    background:var(--bg-bar);color:var(--text2);font-style:italic;text-indent:0
+}
+/* 底部栏 */
+.bbar{
+    position:fixed;bottom:0;left:0;right:0;z-index:100;
+    background:var(--bg-bar);border-top:1px solid var(--bd);
+    display:flex;align-items:center;justify-content:center;padding:10px 24px;gap:16px;flex-wrap:wrap
+}
+.bbar button{
+    background:none;border:1px solid var(--bd);color:var(--text);
+    width:36px;height:36px;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center
+}
+.bbar button:hover{border-color:var(--blue);color:var(--blue)}
+.bbar .fs{font-size:.8rem;color:var(--text2);min-width:30px;text-align:center}
+.bbar select{
+    background:var(--bg);border:1px solid var(--bd);color:var(--text);
+    padding:4px 8px;font-size:.8rem
+}
+.bbar .pg{font-size:.75rem;color:var(--text2)}
+#loading{text-align:center;padding:120px 20px;color:var(--text2)}
+.err{text-align:center;padding:120px 20px;color:var(--text2)}
+@media(max-width:640px){
+    #reader{padding:72px 16px 90px}
+    .bar{padding:0 12px}
+    .bar select{max-width:120px;font-size:.75rem}
+    .bbar{gap:8px;padding:8px 12px}
+    .bbar button{width:32px;height:32px;font-size:1rem}
+}
+</style>
+</head>
+<body>
+
+<div class="bar">
+    <button class="back" onclick="history.back()">‹</button>
+    <span class="bt" id="bt">加载中...</span>
+    <select id="sel" onchange="go(parseInt(this.value))"></select>
+</div>
+
+<div id="loading">📖 加载中...</div>
+<div id="reader" style="display:none"></div>
+
+<div class="bbar">
+    <button onclick="cz(-1)">A−</button>
+    <span class="fs" id="fs">16</span>
+    <button onclick="cz(1)">A+</button>
+    <select id="ff" onchange="cf()">
+        <option value="'Noto Sans SC','PingFang SC',sans-serif">默认</option>
+        <option value="'Noto Serif SC',serif">宋体</option>
+        <option value="'KaiTi',楷体,serif">楷体</option>
+        <option value="'Microsoft YaHei',sans-serif">雅黑</option>
+    </select>
+    <span class="pg" id="pg">- / -</span>
+</div>
+
+<script>
+const BOOKS={
+    '竹光深水':['竹光深水/竹光深水全集.txt',0],
+    '思':['思/',1],
+    '武悲恋':['武悲恋/',1],
+    '白月光':['白月光/',1],
+    '少女日记':['少女日记/',1],
+    '东普鲁士小姐':['东普鲁士小姐/',1],
+    '扬子江铁流':['扬子江铁流/',1],
+    '回香谷·源梅':['回香谷·源梅.txt',0],
+    '李欣星':['李欣星.txt',0],
+    '芜湖':['芜湖/',1],
+    '警示故事':['警示故事/',1],
+    '震中行':['震中行.md',0]
+};
+
+// 多章节作品的文件列表
+const FLISTS={
+    '思/':['第1章-新京2055.md','第2章-深水区的门.md','第3章-第一次触碰.md','第4章-冰山的背面.md','第5章-火光的轮廓.md','第6章-日常的缝隙.md','第7章-颜色与颜色之间.md','第8章-三个人的晚餐.md','第9章-指尖火焰第一次.md','第10章-余震.md','第11章-侵蚀.md','第12章-地下世界.md','第13章-再触第二次.md','第14章-暴风雨前的宁静.md','第15章-第一块拼图.md','第16章-陆征.md','第17章-压力.md','第18章-冰裂.md','第19章-第三场裂缝中的火焰.md','第20章-锁链.md','第21章-离职.md','第22章-取证.md','第23章-猎人与猎物.md','第24章-陨落与逃脱.md','第25章-夜的公路.md','第26章-藏身处.md','第27章-最后的拼图.md','第28章-影子里的光.md','第29章-第四场末日的温柔.md','第30章-日出之前.md','第31章-母亲的密钥.md','第32章-公开.md','第33章-最后一战.md','第34章-第五场无边.md','第35章-尾声思.md'],
+    '武悲恋/':['第01章-归来之人.md','第02章-同桌.md'],
+    '白月光/':['第01章-裂变.md','第02章-归途.md','第03章-旧人.md','第04章-同桌.md','第05章-自我介绍.md','第06章-试探.md','第07章-装小子.md','第08章-谭雅源.md','第09章-混混.md','第10章-武术底子.md','第11章-雌小鬼初现.md','第12章-生物课.md','第13章-试探升级.md','第14章-护送.md','第15章-生病.md','第16章-周末.md','第17章-醋意.md'],
+    '少女日记/':Array.from({length:30},(_,i)=>'日记'+String(i+1).padStart(2,'0')+'.md'),
+    '东普鲁士小姐/':['第01章-猝死与新生.md'],
+    '扬子江铁流/':['扬子江铁流——第一卷：烽火燃江.txt','扬子江铁流——第二卷：钟山风雨.txt','扬子江铁流——第三卷：腥红落幕.txt','扬子江铁流——番外：清算·重建·归流.txt','扬子江铁流——后记：为什么要写这部小说.txt'],
+    '芜湖/':['第一篇_火药桶.md','第二篇_内战.md','第三篇_废墟之上.md'],
+    '警示故事/':['第一章_寻常的命令.md','第二章_沉默的重量.md','第三章_裂痕.md','第四章_沉默的同谋.md','第五章_余波.md']
+};
+
+const Q=new URLSearchParams(location.search);
+const BK=Q.get('book')||'竹光深水';
+const cfg=BOOKS[BK];
+if(!cfg){document.getElementById('loading').textContent='❌ 作品不存在';throw''}
+
+const base='books/'+cfg[0];
+const isMulti=cfg[1]===1;
+let chIdx=parseInt(Q.get('chapter'))||0;
+let chapters=[];
+let fs=parseInt(localStorage.getItem('rfs'))||16;
+let ff=localStorage.getItem('rff')||"'Noto Sans SC','PingFang SC',sans-serif";
+
+document.getElementById('bt').textContent=BK;
+document.getElementById('fs').textContent=fs;
+document.getElementById('ff').value=ff;
+document.body.style.fontSize=fs+'px';
+document.body.style.fontFamily=ff;
+
+function $(id){return document.getElementById(id)}
+
+async function init(){
+    try{
+        if(isMulti)await loadMulti();
+        else await loadSingle();
+    }catch(e){
+        $('loading').textContent='❌ '+e.message;
+    }
+}
+
+async function loadMulti(){
+    chapters=FLISTS[cfg[0]]||[];
+    if(!chapters.length)throw new Error('无章节');
+    buildSel();
+    await go(chIdx);
+}
+
+async function loadSingle(){
+    const f=cfg[0];
+    const r=await fetch('books/'+f);
+    if(!r.ok)throw new Error('文件不存在');
+    const txt=await r.text();
+    // 按章节拆分
+    const parts=[];
+    const re=/^(第[一二三四五六七八九十\d]+[章卷篇]|日记\d+)/gm;
+    let last=0,lastT='序章',m;
+    while((m=re.exec(txt))!==null){
+        if(m.index>last)parts.push({t:lastT,c:txt.slice(last,m.index).trim()});
+        lastT=m[1];last=m.index;
+    }
+    if(last<txt.length)parts.push({t:lastT,c:txt.slice(last).trim()});
+    chapters=parts.length>1?parts:[{t:'全文',c:txt}];
+    buildSel();
+    await go(chIdx);
+}
+
+function buildSel(){
+    const sel=$('sel');sel.innerHTML='';
+    chapters.forEach((ch,i)=>{
+        const opt=document.createElement('option');
+        opt.value=i;
+        opt.textContent=typeof ch==='string'?ch.replace(/\.(md|txt)$/,''):ch.t;
+        sel.appendChild(opt);
+    });
+    sel.value=chIdx;
+    up();
+}
+
+async function go(idx){
+    if(idx<0||idx>=chapters.length)return;
+    chIdx=idx;
+    $('sel').value=idx;
+    $('loading').style.display='block';
+    $('reader').style.display='none';
+    
+    try{
+        let html='',title='';
+        if(isMulti){
+            const file=chapters[idx];
+            const r=await fetch(base+encodeURIComponent(file));
+            if(!r.ok)throw new Error('加载失败');
+            const txt=await r.text();
+            title=file.replace(/\.(md|txt)$/,'');
+            html=md(txt);
+        }else{
+            const ch=chapters[idx];
+            title=ch.t;
+            html=md(ch.c);
+        }
+        $('reader').innerHTML='<div class="ct">'+esc(title)+'</div><div class="body">'+html+'</div>';
+        $('reader').style.display='block';
+        $('loading').style.display='none';
+        window.scrollTo({top:0,behavior:'smooth'});
+        localStorage.setItem('rp_'+BK,idx);
+        up();
+    }catch(e){
+        $('loading').textContent='❌ '+e.message;
+    }
+}
+
+function md(t){
+    if(!t)return'<p>（空）</p>';
+    let h=t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/^#### (.+)$/gm,'<h4>$1</h4>')
+        .replace(/^### (.+)$/gm,'<h3>$1</h3>')
+        .replace(/^## (.+)$/gm,'<h2>$1</h2>')
+        .replace(/^# (.+)$/gm,'<h1>$1</h1>')
+        .replace(/^> (.+)$/gm,'<blockquote>$1</blockquote>')
+        .replace(/\*\*\*(.+?)\*\*\*/g,'<strong><em>$1</em></strong>')
+        .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g,'<em>$1</em>')
+        .replace(/\n\n+/g,'</p><p>')
+        .replace(/\n/g,'<br>');
+    return'<p>'+h+'</p>';
+}
+
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+function cz(d){
+    fs=Math.max(12,Math.min(32,fs+d));
+    $('fs').textContent=fs;
+    document.body.style.fontSize=fs+'px';
+    localStorage.setItem('rfs',fs);
+}
+
+function cf(){
+    ff=$('ff').value;
+    document.body.style.fontFamily=ff;
+    localStorage.setItem('rff',ff);
+}
+
+function up(){$('pg').textContent=(chIdx+1)+' / '+chapters.length}
+
+// 键盘
+document.addEventListener('keydown',function(e){
+    if(e.key==='ArrowLeft'&&chIdx>0)go(chIdx-1);
+    if(e.key==='ArrowRight'&&chIdx<chapters.length-1)go(chIdx+1);
+});
+
+// 恢复进度
+const sp=localStorage.getItem('rp_'+BK);
+if(sp&&!Q.get('chapter'))chIdx=parseInt(sp);
+
+document.addEventListener('DOMContentLoaded',function(){
+    document.body.style.fontSize=fs+'px';
+    document.body.style.fontFamily=ff;
+    init();
+});
+</script>
+</body>
+</html>
